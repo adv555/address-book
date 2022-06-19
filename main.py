@@ -13,21 +13,38 @@ class AddressBook(UserDict):
         name = str(record.name)
         self.data[name] = record
 
-    def search_by_records(self, value):
-        return value in self.data.values()
+    def find_record(self, search_value):
+        search_value = search_value[0].upper() + search_value[1:].lower()
+        list_of_values = (str(value).split(" ") for value in self.data.values())
+
+        for value in list_of_values:
+            if search_value in value:
+                return print(f"{search_value} was found in {value}")
+        return print(f"{search_value} was not found")
 
     def delete_record(self, value):
         value = value[0].upper() + value[1:].lower()
         self.data.__delitem__(value)
         return print(f"Record {value} was deleted")
 
-    def update_record(self, old_value):
-        for value in self.data.values():
-            value_list = str(value).split(",")
-            if old_value in value_list:
-                print("eeee")
-        # else:
-        #     print("Record not found.")
+    def update_record(self, old_value, new_value):
+        old_value = old_value[0].upper() + old_value[1:].lower()
+        new_value = new_value[0].upper() + new_value[1:].lower()
+        list_of_values = (str(value).split(" ") for value in self.data.values())  # list of lists(generator)
+
+        for value in list_of_values:
+
+            if old_value in value:
+                index = value.index(old_value)
+                value[index] = new_value
+                name = value[0][0].upper() + value[0][1:].lower()
+
+                self.data[name] = ' '.join(value)
+                self.delete_record(old_value)
+
+                return print(f"{old_value} was replaced with {new_value}")
+
+        return print(f"{old_value} was not found")
 
     def iterator(self, n):
         if len(self.data) < n:
@@ -74,8 +91,8 @@ class Record:
                 break
 
     def __repr__(self):
-        # result = f"{self.name}, {self.phone_number}, {self.birthday}, {self.days_to_birthday()} days to birthday"
-        result = f"{self.name}, {self.phone_number}, {self.birthday}"
+
+        result = f"{self.name} {self.phone_number} {self.birthday}"
         return result
 
 
@@ -190,9 +207,13 @@ def main():
                 sasha_book.delete_record(name)
                 sasha_book.save()
             if command == "edit" or command == "update" or command == "change":
-                value = input("Enter name/phone/birthday for update:")
-                sasha_book.update_record(value)
+                old_value = input("Enter name/phone/birthday for update:")
+                new_value = input("Enter new value:")
+                sasha_book.update_record(old_value, new_value)
                 sasha_book.save()
+            if command == "find":
+                value = input("Enter name/phone/birthday for find:")
+                sasha_book.find_record(value)
             if command == "show":
                 print(sasha_book)
             if command == "exit" or command == "bye" or command == "goodbye":

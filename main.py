@@ -18,33 +18,35 @@ class AddressBook(UserDict):
         list_of_values = (str(value).split(" ") for value in self.data.values())
 
         for value in list_of_values:
-            if search_value in value:
+            if str(search_value) in value:
                 return print(f"{search_value} was found in {value}")
         return print(f"{search_value} was not found")
 
-    def delete_record(self, value):
-        value = value[0].upper() + value[1:].lower()
-        self.data.__delitem__(value)
-        return print(f"Record {value} was deleted")
+    def delete_record(self, key):
+        if key in self.data.keys():
+            self.data.__delitem__(key)
+            return print(f"Record {key} was deleted")
+        return print(f"Record {key} was not found")
 
     def update_record(self, old_value, new_value):
-        old_value = old_value[0].upper() + old_value[1:].lower()
-        new_value = new_value[0].upper() + new_value[1:].lower()
-        list_of_values = (str(value).split(" ") for value in self.data.values())  # list of lists(generator)
+        old_value = str(old_value)
+        new_value = str(new_value)
 
-        for value in list_of_values:
+        list_of_values_test = (value for value in self.data.values())
+        for el in list_of_values_test:
 
-            if old_value in value:
-                index = value.index(old_value)
-                value[index] = new_value
-                name = value[0][0].upper() + value[0][1:].lower()
+            if old_value in el:
+                new_el = el.replace(old_value, new_value)
+                old_key = el.split(' ')[0]
+                new_key = new_el.split(' ')[0]
+                if old_key != new_key:
+                    self.data.__delitem__(old_key)
+                    self.data[new_key] = new_el
+                else:
+                    self.data[old_key] = new_el
+                return print(f"Record {old_value} was updated to {new_value}")
 
-                self.data[name] = ' '.join(value)
-                self.delete_record(old_value)
-
-                return print(f"{old_value} was replaced with {new_value}")
-
-        return print(f"{old_value} was not found")
+        return print(f"Record {old_value} was not found")
 
     def iterator(self, n):
         if len(self.data) < n:
@@ -134,6 +136,8 @@ class Field:
                     self.__phone = f'+{value}'
                 elif len(value) == 10:
                     self.__phone = f'+38{value}'
+                elif len(value) == 13:
+                    self.__phone = value
             else:
                 raise Exception(f"Phone number is not valid")
 
@@ -207,10 +211,25 @@ def main():
                 sasha_book.delete_record(name)
                 sasha_book.save()
             if command == "edit" or command == "update" or command == "change":
-                old_value = input("Enter name/phone/birthday for update:")
-                new_value = input("Enter new value:")
-                sasha_book.update_record(old_value, new_value)
-                sasha_book.save()
+                update_name = int(input('Enter 1 to update name, 2 to update phone number, 3 to update birthday: '))
+                if update_name == 1:
+                    old_value = input("Enter old name:")
+                    new_value = input("Enter new name:")
+                    sasha_book.update_record(Name(old_value), Name(new_value))
+                    sasha_book.save()
+                elif update_name == 2:
+                    old_value = input("Enter old phone-number:")
+                    new_value = input("Enter new phone-number:")
+                    sasha_book.update_record(Phone(old_value), Phone(new_value))
+                    sasha_book.save()
+                elif update_name == 3:
+                    old_value = input("Enter old birthday:")
+                    new_value = input("Enter new birthday:")
+                    sasha_book.update_record(Birthday(old_value), Birthday(new_value))
+                    sasha_book.save()
+                else:
+                    print("Wrong command")
+
             if command == "find":
                 value = input("Enter name/phone/birthday for find:")
                 sasha_book.find_record(value)
